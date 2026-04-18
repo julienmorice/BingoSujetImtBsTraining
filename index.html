@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bingo sujets IMT-BS !</title>
+  <style>
+    :root{
+      --bg:#0f1226;
+      --panel:#171b3a;
+      --accent:#6ee7ff;
+      --accent-2:#ffd166;
+      --text:#f7f8ff;
+      --muted:#a9b1d6;
+      --ok:#7CFC86;
+      --warn:#ff9f43;
+      --danger:#ff6b6b;
+      --focus:#ffee00;
+      --shadow: 0 12px 30px rgba(0,0,0,.45);
+      --timer-color: var(--ok);
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 50% -200px, #2a2f73 0%, rgba(42,47,115,0) 60%),
+        linear-gradient(180deg, #0a0c1c 0%, var(--bg) 35%, #0a0c1c 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .app{
+      width:min(920px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .header-text{ flex:1; }
+    header h1{
+      margin:0;
+      font-weight:800;
+      letter-spacing:.4px;
+      font-size:clamp(20px, 2.6vw, 28px);
+      display:flex; align-items:center; gap:.5rem;
+    }
+    header p{
+      margin:.25rem 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .header-logo{
+      background:#fff;
+      border-radius:12px;
+      padding:8px 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.35);
+      flex-shrink:0;
+    }
+    .header-logo img{
+      display:block;
+      height:clamp(44px, 6vw, 64px);
+      width:auto;
+    }
+    .machine{
+      background:linear-gradient(180deg, #1d224a 0%, var(--panel) 60%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:20px;
+      box-shadow: var(--shadow);
+    }
+    .reels{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:14px;
+    }
+    .reel{
+      background: #0d1030;
+      border-radius:16px;
+      border:2px solid rgba(255,255,255,.1);
+      position:relative;
+      overflow:hidden;
+      min-height:92px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), inset 0 -30px 40px rgba(0,0,0,.35);
+    }
+    .reel::before, .reel::after{
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      border-radius:14px;
+    }
+    .reel::before{ box-shadow: inset 0 0 40px rgba(110,231,255,.12); }
+    .reel.spinning::after{
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0 14px,
+        rgba(255,255,255,.06) 14px 20px
+      );
+      filter: blur(.4px) brightness(1.05);
+      animation: slide 300ms linear infinite;
+    }
+    @keyframes slide{ to{ transform: translateX(20px); } }
+    .value{
+      font-weight:800;
+      font-size: clamp(20px, 3.5vw, 28px);
+      text-transform: none;
+      letter-spacing:.2px;
+      text-align:center;
+      padding:10px 12px;
+      line-height:1.15;
+      text-shadow: 0 2px 8px rgba(0,0,0,.45);
+    }
+    .chip{
+      position:absolute; top:8px; left:10px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.15);
+      color: var(--muted);
+      font-size:12px;
+      padding:2px 8px; border-radius:999px;
+    }
+    .controls{
+      display:flex; flex-wrap:wrap; align-items:center; gap:12px;
+      margin-top:16px;
+    }
+    .btn{
+      appearance:none;
+      border:2px solid var(--accent);
+      background: linear-gradient(180deg, #2bdcff 0%, #0bd0ff 60%);
+      color:#001018;
+      font-weight:900;
+      letter-spacing:.3px;
+      padding:12px 18px;
+      border-radius:999px;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(11,208,255,.25), inset 0 -4px 10px rgba(0,0,0,.25);
+      transition: transform .05s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .btn:hover{ filter: brightness(1.05); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ cursor:not-allowed; filter: grayscale(.3) brightness(.85); opacity:.7; }
+    .btn:focus-visible{ outline:3px dashed var(--focus); outline-offset:3px; }
+
+    .btn-secondary{
+      border-color: var(--accent-2);
+      background: linear-gradient(180deg, #ffe082 0%, var(--accent-2) 60%);
+      color:#2a2100;
+      box-shadow: 0 10px 22px rgba(255,209,102,.25), inset 0 -4px 10px rgba(0,0,0,.25);
+    }
+
+    .toggle{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); }
+    .toggle input{ width:18px; height:18px; }
+    .status{ margin-left:auto; font-size:13px; color:var(--muted); }
+
+    /* —— Pitch amélioré —— */
+    .pitch{
+      position:relative;
+      margin:14px 0 0;
+      padding:20px 22px;
+      border-radius:16px;
+      background: rgba(110,231,255,.07);
+      border:1px solid rgba(110,231,255,.2);
+      font-size:clamp(18px, 2.6vw, 24px);
+      font-weight:700;
+      line-height:1.4;
+      letter-spacing:.1px;
+      opacity:0;
+      pointer-events:none;
+    }
+    .pitch.show{
+      opacity:1;
+      pointer-events:auto;
+      animation: fadeUp .5s ease both, glowPulse 2s ease 0.5s 3;
+    }
+    @keyframes glowPulse{
+      0%,100%{ box-shadow: 0 0 0 0 rgba(110,231,255,0), inset 0 0 30px rgba(110,231,255,.05); }
+      50%    { box-shadow: 0 0 28px 6px rgba(110,231,255,.35), inset 0 0 40px rgba(110,231,255,.12); }
+    }
+    .pitch-badge{
+      position:absolute; top:10px; right:14px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.18);
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.5px;
+      padding:2px 8px;
+      border-radius:999px;
+    }
+    .pitch-text{ margin:0; display:block; }
+    .hl-verbe{
+      color: var(--accent);
+      font-weight:900;
+      text-shadow: 0 0 14px rgba(110,231,255,.5);
+    }
+    .hl-element{
+      color: var(--accent-2);
+      font-weight:900;
+      text-shadow: 0 0 14px rgba(255,209,102,.4);
+    }
+
+    /* —— Chronomètre redesigné —— */
+    .timer{
+      margin:16px 0 0;
+      padding:16px 20px;
+      border-radius:16px;
+      background: rgba(255,209,102,.06);
+      border:1px solid rgba(255,209,102,.25);
+      display:flex; flex-wrap:wrap; align-items:center; gap:20px;
+    }
+    .timer-circle-wrap{
+      position:relative;
+      width:100px; height:100px;
+      flex-shrink:0;
+    }
+    .timer-svg{
+      width:100px; height:100px;
+      transform: rotate(-90deg);
+    }
+    .timer-track{
+      fill:none;
+      stroke: rgba(255,255,255,.07);
+      stroke-width:7;
+    }
+    .timer-progress{
+      fill:none;
+      stroke: var(--timer-color);
+      stroke-width:7;
+      stroke-linecap:round;
+      stroke-dasharray: 251.3;
+      stroke-dashoffset: 251.3;
+      transition: stroke-dashoffset .25s linear, stroke .4s ease;
+      filter: drop-shadow(0 0 5px var(--timer-color));
+    }
+    .timer-inner{
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:1px;
+    }
+    .timer-display{
+      font-variant-numeric: tabular-nums;
+      font-weight:900;
+      font-size:clamp(16px, 2.2vw, 20px);
+      letter-spacing:.4px;
+      color: var(--timer-color);
+      transition: color .4s ease;
+      line-height:1;
+    }
+    .timer-tenths{
+      font-size:.7em;
+      opacity:.75;
+    }
+    .timer-label{
+      font-size:10px;
+      color:var(--muted);
+      letter-spacing:.6px;
+      text-transform:uppercase;
+    }
+    .timer-controls{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+
+    /* États couleur chrono */
+    .timer.state-warn  { border-color: rgba(255,159,67,.4); }
+    .timer.state-alert { border-color: rgba(255,107,107,.5); }
+
+    .sr-only{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+    @keyframes fadeUp{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform: translateY(0);} }
+    @media (prefers-reduced-motion: reduce){
+      *{ animation: none !important; transition: none !important; }
+      .reel.spinning::after{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" role="main" aria-label="Application de tirage de sujets">
+    <header>
+      <div class="header-text">
+        <h1>Bingo sujets IMT-BS !</h1>
+        <p>Appuyez sur <strong>Générer le sujet</strong> (ou Entrée/Espace). Les roues s'arrêtent l'une après l'autre, puis la consigne apparaît.</p>
+      </div>
+      <div class="header-logo">
+        <img src="logo_IMT_Bs.png" alt="IMT Business School" />
+      </div>
+    </header>
+
+    <section class="machine" role="group" aria-label="Machine à sous créative" aria-busy="false">
+      <div class="reels" id="reels">
+        <div class="reel" id="reel-secteur" aria-label="Roue 1 — Secteur" aria-live="off" aria-atomic="true">
+          <span class="chip">Secteur</span>
+          <div class="value" id="value-secteur">—</div>
+        </div>
+        <div class="reel" id="reel-element" aria-label="Roue 2 — Ressource" aria-live="off" aria-atomic="true">
+          <span class="chip">Ressource</span>
+          <div class="value" id="value-element">—</div>
+        </div>
+        <div class="reel" id="reel-verbe" aria-label="Roue 3 — Verbe" aria-live="off" aria-atomic="true">
+          <span class="chip">Verbe</span>
+          <div class="value" id="value-verbe">—</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="spinBtn" class="btn" type="button" aria-label="Générer le sujet (Entrée ou Espace)">Générer le sujet</button>
+        <label class="toggle" for="sound">
+          <input type="checkbox" id="sound" aria-label="Activer le son" checked />
+          🔊 Son
+        </label>
+        <div id="status" class="status" aria-live="polite">Prêt</div>
+      </div>
+
+      <!-- Pitch -->
+      <div id="pitch" class="pitch" role="status" aria-live="polite" aria-atomic="true" aria-relevant="text">
+        <span class="pitch-badge" id="pitch-badge"></span>
+        <span class="pitch-text" id="pitch-text"></span>
+      </div>
+      <span id="sr-hint" class="sr-only" aria-live="polite"></span>
+
+      <!-- Chronomètre -->
+      <div class="timer" id="timer" role="group" aria-label="Chronomètre">
+        <div class="timer-circle-wrap" aria-hidden="true">
+          <svg class="timer-svg" viewBox="0 0 100 100">
+            <circle class="timer-track" cx="50" cy="50" r="40"/>
+            <circle class="timer-progress" id="timer-progress" cx="50" cy="50" r="40"/>
+          </svg>
+          <div class="timer-inner">
+            <div class="timer-display" id="timer-display">00:00</div>
+            <div class="timer-label">chrono</div>
+          </div>
+        </div>
+        <div class="timer-controls">
+          <button id="timer-toggle" class="btn btn-secondary" type="button" aria-label="Démarrer le chronomètre">▶ Démarrer</button>
+          <button id="timer-reset" class="btn btn-secondary" type="button" aria-label="Réinitialiser le chronomètre">↺ Relancer</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const DATA = {
+      "sujets": [
+        { "id": 1, "secteur": "Agriculture",  "element": "Souveraineté alimentaire",  "verbe": "proposer",   "pitch": "Vous devez proposer un projet innovant pour garantir la souveraineté alimentaire face aux défis mondiaux." },
+        { "id": 2, "secteur": "Environnement","element": "Drones",                    "verbe": "protéger",   "pitch": "Vous devez protéger les écosystèmes en intégrant la ressource « drones »." },
+        { "id": 3, "secteur": "Santé",        "element": "Robot",                     "verbe": "intégrer",   "pitch": "Vous devez intégrer des robots ambulanciers autonomes dans les services d'urgence." },
+        { "id": 4, "secteur": "Tourisme",     "element": "Application",               "verbe": "réinventer", "pitch": "Vous devez réinventer le secteur du tourisme en intégrant la ressource « application »." },
+        { "id": 5, "secteur": "Économie",     "element": "Cryptomonnaie",             "verbe": "développer", "pitch": "Vous devez développer un projet facilitant le commerce international entre petites entreprises grâce à une « cryptomonnaie universelle »." },
+        { "id": 6, "secteur": "Société",      "element": "Consommation décarbonée",   "verbe": "encourager", "pitch": "Vous devez encourager un changement sociétal en intégrant l'élément « consommation décarbonée »." }
+      ]
+    };
+
+    // DOM
+    const $machine  = document.querySelector('.machine');
+    const $btn      = document.getElementById('spinBtn');
+    const $status   = document.getElementById('status');
+    const $pitch    = document.getElementById('pitch');
+    const $pitchText= document.getElementById('pitch-text');
+    const $pitchBadge = document.getElementById('pitch-badge');
+    const $srHint   = document.getElementById('sr-hint');
+    const reels = [
+      { box: document.getElementById('reel-secteur'), valueEl: document.getElementById('value-secteur') },
+      { box: document.getElementById('reel-element'), valueEl: document.getElementById('value-element') },
+      { box: document.getElementById('reel-verbe'),   valueEl: document.getElementById('value-verbe') },
+    ];
+    const soundToggle = document.getElementById('sound');
+
+    // Chrono DOM
+    const $timer        = document.getElementById('timer');
+    const $timerDisplay = document.getElementById('timer-display');
+    const $timerProgress= document.getElementById('timer-progress');
+    const $timerToggle  = document.getElementById('timer-toggle');
+    const $timerReset   = document.getElementById('timer-reset');
+
+    // État
+    let isSpinning = false;
+    let hasSpun    = false;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const sectors  = Array.from(new Set(DATA.sujets.map(s => s.secteur)));
+    const elements = Array.from(new Set(DATA.sujets.map(s => s.element)));
+    const verbs    = Array.from(new Set(DATA.sujets.map(s => s.verbe)));
+
+    // Son
+    let audioCtx = null;
+    function beep(freq = 760, duration = 110){
+      if(!soundToggle?.checked) return;
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine'; o.frequency.value = freq; g.gain.value = 0.06;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); setTimeout(()=> o.stop(), duration);
+      }catch(e){}
+    }
+
+    const pickSubject = () => DATA.sujets[Math.floor(Math.random() * DATA.sujets.length)];
+
+    function capitalizeFirst(str){
+      if(!str) return str;
+      const ls = str.match(/^\s*/)[0];
+      const t  = str.trimStart();
+      return ls + t.charAt(0).toLocaleUpperCase('fr-FR') + t.slice(1);
+    }
+
+    // Surligne uniquement le mot du secteur en bleu et la ressource entre « » en jaune
+    function renderPitchHTML(subject){
+      let html = capitalizeFirst(subject.pitch);
+
+      // Bleu : mot du secteur (correspondance exacte, insensible à la casse)
+      const sectEsc = subject.secteur.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      html = html.replace(
+        new RegExp(`(?<![a-zA-ZÀ-ÿ0-9])(${sectEsc})(?![a-zA-ZÀ-ÿ0-9])`, 'gi'),
+        (_, m) => `<span class="hl-verbe">${m}</span>`
+      );
+
+      // Jaune : ressource entre « »
+      html = html.replace(/«\s*([^»]+?)\s*»/g, (_, inner) =>
+        `« <span class="hl-element">${inner}</span> »`
+      );
+
+      return html;
+    }
+
+    function setBusy(busy){
+      isSpinning = busy;
+      $machine.setAttribute('aria-busy', String(busy));
+      $btn.disabled = busy;
+      $status.textContent = busy ? 'Tirage en cours…' : 'Prêt';
+    }
+    function updateSRHint(msg){ $srHint.textContent = msg; }
+
+    function spinOnce(){
+      if(isSpinning) return;
+      setBusy(true);
+      $pitch.classList.remove('show');
+      $pitchText.innerHTML = '';
+      $pitchBadge.textContent = '';
+
+      const subject = pickSubject();
+      if(!subject){
+        reels.forEach(r => r.box.classList.remove('spinning'));
+        setBusy(false);
+        return;
+      }
+
+      const base = reduceMotion ? 220 : 1100;
+      const step = reduceMotion ? 120 : 650;
+      const durations = [base, base + step, base + step*2];
+      const pools = [sectors, elements, verbs];
+      const intervals = [];
+
+      reels.forEach((reel, i) => {
+        reel.box.classList.add('spinning');
+        intervals[i] = setInterval(()=>{
+          const arr = pools[i];
+          reel.valueEl.textContent = arr[Math.floor(Math.random() * arr.length)];
+        }, reduceMotion ? 120 : 60);
+      });
+
+      function stopReel(i, finalVal){
+        clearInterval(intervals[i]);
+        reels[i].valueEl.textContent = finalVal;
+        reels[i].box.classList.remove('spinning');
+        beep(640 + i*80, reduceMotion ? 70 : 120);
+      }
+
+      setTimeout(()=> stopReel(0, subject.secteur), durations[0]);
+      setTimeout(()=> stopReel(1, subject.element), durations[1]);
+      setTimeout(()=> {
+        stopReel(2, subject.verbe);
+        requestAnimationFrame(()=>{
+          $pitchBadge.textContent = `#${subject.id}`;
+          $pitchText.innerHTML = renderPitchHTML(subject);
+          $pitch.classList.add('show');
+          updateSRHint(`Sujet ${subject.id} tiré. ${subject.secteur}, ${subject.element}, ${subject.verbe}.`);
+          setBusy(false);
+          if(!hasSpun){ hasSpun = true; $btn.textContent = 'Regénérer le sujet'; }
+        });
+      }, durations[2]);
+    }
+
+    // —— Chronomètre ——
+    const CIRCUMFERENCE = 2 * Math.PI * 40; // 251.3
+    const WARN_MS  = 3 * 60 * 1000;  // 3 min → orange
+    const ALERT_MS = 5 * 60 * 1000;  // 5 min → rouge
+    const CYCLE_MS = 5 * 60 * 1000;  // cercle complète en 5 min
+
+    let timerInterval = null;
+    let elapsedMs = 0;
+    let timerRunning = false;
+
+    function formatTime(ms){
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60).toString().padStart(2,'0');
+      const seconds = (totalSeconds % 60).toString().padStart(2,'0');
+      return `${minutes}:${seconds}`;
+    }
+
+    function getTimerColor(ms){
+      if(ms >= ALERT_MS) return 'var(--danger)';
+      if(ms >= WARN_MS)  return 'var(--warn)';
+      return 'var(--ok)';
+    }
+
+    function renderTimer(){
+      $timerDisplay.textContent = formatTime(elapsedMs);
+
+      // Cercle SVG — cycle sur CYCLE_MS
+      const progress = (elapsedMs % CYCLE_MS) / CYCLE_MS;
+      const offset = CIRCUMFERENCE * (1 - progress);
+      $timerProgress.style.strokeDashoffset = offset;
+
+      // Couleur
+      const color = getTimerColor(elapsedMs);
+      $timerProgress.style.stroke = color;
+      $timerDisplay.style.color   = color;
+
+      // Classe état sur le bloc
+      $timer.classList.remove('state-warn','state-alert');
+      if(elapsedMs >= ALERT_MS)     $timer.classList.add('state-alert');
+      else if(elapsedMs >= WARN_MS) $timer.classList.add('state-warn');
+    }
+
+    function startTimer(){
+      if(timerRunning) return;
+      timerRunning = true;
+      const start = performance.now() - elapsedMs;
+      $timerToggle.textContent = '⏸ Pause';
+      $timerToggle.setAttribute('aria-label','Mettre en pause');
+      timerInterval = setInterval(()=>{
+        elapsedMs = Math.max(0, performance.now() - start);
+        renderTimer();
+      }, 100);
+    }
+
+    function stopTimer(){
+      if(!timerRunning) return;
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerRunning = false;
+      $timerToggle.textContent = '▶ Reprendre';
+      $timerToggle.setAttribute('aria-label','Reprendre le chronomètre');
+    }
+
+    function resetTimer(){
+      stopTimer();
+      elapsedMs = 0;
+      $timerToggle.textContent = '▶ Démarrer';
+      $timerToggle.setAttribute('aria-label','Démarrer le chronomètre');
+      renderTimer();
+    }
+
+    $timerToggle.addEventListener('click', ()=> timerRunning ? stopTimer() : startTimer());
+    $timerReset.addEventListener('click', resetTimer);
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.altKey || e.metaKey || e.ctrlKey) return;
+      if(e.key.toLowerCase() === 't') timerRunning ? stopTimer() : startTimer();
+      if(e.key.toLowerCase() === 'r') resetTimer();
+    });
+
+    document.getElementById('spinBtn').addEventListener('click', spinOnce);
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); spinOnce(); }
+    });
+
+    (function init(){
+      reels[0].valueEl.textContent = 'Secteur';
+      reels[1].valueEl.textContent = 'Ressource';
+      reels[2].valueEl.textContent = 'Verbe';
+      renderTimer();
+    })();
+
+    window.addEventListener('pointerdown', ()=> {
+      if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    }, { once:true });
+  </script>
+</body>
+</html>
