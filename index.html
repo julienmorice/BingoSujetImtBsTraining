@@ -52,7 +52,38 @@
     header p{
       margin:.25rem 0 0;
       color:var(--muted);
-      font-size:14px;
+      font-size:13px;
+    }
+    .intro-banner{
+      background: rgba(110,231,255,.06);
+      border: 1px solid rgba(110,231,255,.18);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .intro-desc{
+      margin: 0;
+      font-size: 14px;
+      color: #d0d8f0;
+      line-height: 1.6;
+    }
+    .intro-hint{
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(255,255,255,.05);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .intro-hint::before{
+      content: "💡";
+      flex-shrink: 0;
+      margin-top: 1px;
     }
     .header-logo{
       background:#fff;
@@ -281,12 +312,16 @@
     <header>
       <div class="header-text">
         <h1>Bingo sujets IMT-BS - Préparation !</h1>
-        <p>Appuyez sur <strong>Générer le sujet</strong> (ou Entrée/Espace). Les roues s'arrêtent l'une après l'autre, puis la consigne apparaît.</p>
       </div>
       <div class="header-logo">
         <img src="logo_IMT_Bs.png" alt="IMT Business School" />
       </div>
     </header>
+
+    <div class="intro-banner" role="note">
+      <p class="intro-desc">Cette plateforme vous permet de vous préparer à l'exercice d'oral. Les sujets proposés ne seront pas les mêmes durant l'oral d'admission, mais cela vous permet de comprendre et d'anticiper l'exercice du jour J.</p>
+      <p class="intro-hint">Appuyez sur <strong>Générer le sujet</strong> (ou Entrée/Espace). Les roues s'arrêtent l'une après l'autre, puis la consigne apparaît.</p>
+    </div>
 
     <section class="machine" role="group" aria-label="Machine à sous créative" aria-busy="false">
       <div class="reels" id="reels">
